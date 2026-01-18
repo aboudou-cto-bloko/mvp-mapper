@@ -132,7 +132,6 @@ export default function LandingHero() {
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <span>✓ Free forever</span>
           <span>✓ No data collection</span>
-          <span>✓ Works offline</span>
         </div>
       </div>
     </div>
