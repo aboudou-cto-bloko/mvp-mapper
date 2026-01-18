@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { saveIdea, isFlowComplete } from "@/lib/localStorage";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LandingHero() {
   const [idea, setIdea] = useState("");
@@ -45,7 +45,6 @@ export default function LandingHero() {
       {/* Header */}
       <div className="text-center mb-8 md:mb-12 space-y-3 md:space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-sm font-medium text-primary mb-2">
-          <Sparkles className="w-4 h-4" />
           <span>Free MVP Structuring Tool</span>
         </div>
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
