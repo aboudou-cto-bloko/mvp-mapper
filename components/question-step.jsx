@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { questions } from "@/data/questions";
-import { saveAnswer, getAnswer } from "@/lib/localStorage";
+import { saveAnswer, getAnswer, getAllAnswers } from "@/lib/localStorage";
 import { trackEvent } from "@/lib/analytics";
 
 export default function QuestionStep({ stepId }) {
