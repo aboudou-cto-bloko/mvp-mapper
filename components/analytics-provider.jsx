@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { initAnalytics, trackPageView } from "@/lib/analytics";
 
-export function AnalyticsProvider({ children }) {
+function AnalyticsTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    initAnalytics();
-  }, []);
 
   useEffect(() => {
     if (pathname) {
@@ -18,5 +14,20 @@ export function AnalyticsProvider({ children }) {
     }
   }, [pathname, searchParams]);
 
-  return <>{children}</>;
+  return null;
+}
+
+export function AnalyticsProvider({ children }) {
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  return (
+    <>
+      <Suspense fallback={null}>
+        <AnalyticsTracker />
+      </Suspense>
+      {children}
+    </>
+  );
 }
