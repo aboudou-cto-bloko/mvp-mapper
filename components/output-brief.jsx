@@ -21,6 +21,7 @@ import {
 import { getAllAnswers, getIdea, clearAllData } from "@/lib/localStorage";
 import { questions } from "@/data/questions";
 import { pdf } from "@react-pdf/renderer";
+import { trackEvent } from "@/lib/analytics";
 import { BriefPDFDocument } from "@/lib/generatePDF";
 
 export default function OutputBrief() {
@@ -51,6 +52,16 @@ export default function OutputBrief() {
   useEffect(() => {
     if (briefData === "INCOMPLETE") {
       router.push("/");
+    } else if (briefData) {
+      trackEvent("brief_page_viewed", {
+        total_characters: Object.values({
+          problem: briefData.problem,
+          icp: briefData.icp,
+          feature: briefData.feature,
+          nonFeatures: briefData.nonFeatures,
+          buildScope: briefData.buildScope,
+        }).join("").length,
+      });
     }
   }, [briefData, router]);
 
@@ -58,6 +69,11 @@ export default function OutputBrief() {
     if (!briefData || briefData === "INCOMPLETE") return;
     const text = formatBriefAsText(briefData);
     await navigator.clipboard.writeText(text);
+
+    trackEvent("brief_copied", {
+      text_length: text.length,
+    });
+
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -68,24 +84,30 @@ export default function OutputBrief() {
     try {
       setIsDownloading(true);
 
-      // Générer le PDF
       const doc = <BriefPDFDocument briefData={briefData} />;
       const asPdf = pdf(doc);
       const blob = await asPdf.toBlob();
 
-      // Créer le nom du fichier avec timestamp
       const timestamp = new Date().toISOString().split("T")[0];
       const filename = `mvp-brief-${timestamp}.pdf`;
 
-      // Télécharger
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
+
+      trackEvent("brief_downloaded_pdf", {
+        filename: filename,
+      });
     } catch (error) {
       console.error("PDF generation failed:", error);
+
+      trackEvent("pdf_generation_failed", {
+        error_message: error.message,
+      });
+
       alert("Failed to generate PDF. Please try copying the text instead.");
     } finally {
       setIsDownloading(false);
@@ -94,6 +116,7 @@ export default function OutputBrief() {
 
   const handleReset = () => {
     if (confirm("Start a new brief? This will clear your current data.")) {
+      trackEvent("brief_reset");
       clearAllData();
       router.push("/");
     }

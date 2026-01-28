@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import StructuredData from "@/components/structured-data";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,7 +70,7 @@ export default function RootLayout({ children }) {
         <StructuredData />
       </head>
       <body suppressHydrationWarning className="font-sans antialiased">
-        {children}
+        <AnalyticsProvider>{children}</AnalyticsProvider>
       </body>
     </html>
   );

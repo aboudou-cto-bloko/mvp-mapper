@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +16,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { questions } from "@/data/questions";
 import { saveAnswer, getAnswer } from "@/lib/localStorage";
+import { trackEvent } from "@/lib/analytics";
 
 export default function QuestionStep({ stepId }) {
   const router = useRouter();
   const question = questions.find((q) => q.id === stepId);
   const [answer, setAnswer] = useState(() => getAnswer(stepId));
   const [error, setError] = useState("");
+  const [questionStartTime] = useState(() => Date.now());
+
+  useEffect(() => {
+    trackEvent("question_viewed", {
+      question_id: stepId,
+      question_title: question?.title,
+    });
+  }, [stepId, question?.title]);
 
   if (!question) {
     router.push("/");
@@ -41,12 +50,37 @@ export default function QuestionStep({ stepId }) {
       setError(
         `Your answer needs at least ${minLength} characters. Add more detail.`,
       );
+
+      trackEvent("question_validation_error", {
+        question_id: stepId,
+        question_title: question.title,
+        answer_length: currentLength,
+        required_length: minLength,
+      });
+
       return;
     }
 
+    const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+
     saveAnswer(stepId, answer);
 
+    trackEvent("question_completed", {
+      question_id: stepId,
+      question_title: question.title,
+      answer_length: answer.length,
+      time_spent_seconds: timeSpent,
+    });
+
     if (isLastStep) {
+      const allAnswers = getAllAnswers();
+      const totalCharacters = Object.values(allAnswers).join("").length;
+
+      trackEvent("brief_generated", {
+        total_characters: totalCharacters,
+        total_time_on_site_seconds: timeSpent,
+      });
+
       router.push("/brief");
     } else {
       router.push(`/step/${stepId + 1}`);
@@ -54,6 +88,11 @@ export default function QuestionStep({ stepId }) {
   };
 
   const handleBack = () => {
+    trackEvent("navigated_back", {
+      from_question: stepId,
+      had_answer: answer.trim().length > 0,
+    });
+
     if (answer.trim()) {
       saveAnswer(stepId, answer);
     }
@@ -62,13 +101,6 @@ export default function QuestionStep({ stepId }) {
       router.push("/");
     } else {
       router.push(`/step/${stepId - 1}`);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    // Ctrl/Cmd + Enter to submit
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      handleNext();
     }
   };
 

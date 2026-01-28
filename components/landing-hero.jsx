@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { saveIdea, isFlowComplete } from "@/lib/localStorage";
+import { trackEvent } from "@/lib/analytics";
 import { ArrowRight } from "lucide-react";
 
 export default function LandingHero() {
@@ -27,14 +28,25 @@ export default function LandingHero() {
       setError(
         "Your idea needs at least 20 characters. Add a bit more detail.",
       );
+
+      trackEvent("landing_validation_error", {
+        idea_length: idea.length,
+      });
+
       return;
     }
+
+    trackEvent("flow_started", {
+      idea_length: idea.length,
+      has_completed_before: hasCompletedFlow,
+    });
 
     saveIdea(idea);
     router.push("/step/1");
   };
 
   const handleContinue = () => {
+    trackEvent("returning_user_view_brief");
     router.push("/brief");
   };
 
