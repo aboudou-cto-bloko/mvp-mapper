@@ -104,6 +104,13 @@ export default function QuestionStep({ stepId }) {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleNext();
+    }
+  };
+
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8 space-y-4 md:space-y-6">
       {/* Progress Section */}
